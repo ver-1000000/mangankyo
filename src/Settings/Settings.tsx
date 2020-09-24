@@ -42,7 +42,7 @@ const Settings = ({ already, setScale, canvasRef, scale, download }: Props) => {
 
   return (
     <>
-      <dialog className="Settings-dialog" ref={dialogRef} style={{top: '30px'}}>
+      <dialog className="Settings-dialog" ref={dialogRef} style={{top: '30px', backgroundImage: 'url(./splash-star.svg)'}}>
         <section>
           <h2>設定</h2>
           <dl>

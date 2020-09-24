@@ -5,11 +5,12 @@ import { DownloadOptions } from '../App';
 import './Settings.css';
 
 interface Props {
- className: string;
- canvasRef: React.RefObject<HTMLCanvasElement>;
- scale: number;
- setScale: React.Dispatch<React.SetStateAction<number>>;
- download: (option: DownloadOptions) => void;
+  already: boolean;
+  className: string;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  scale: number;
+  setScale: React.Dispatch<React.SetStateAction<number>>;
+  download: (option: DownloadOptions) => void;
 }
 
 const keydownHandlingCallback =
@@ -20,9 +21,9 @@ const keydownHandlingCallback =
   }
 };
 
-const clickHandlingCallback = (showModal: () => void) => () => showModal();;
+const clickHandlingCallback = (showModal: () => void) => () => showModal();
 
-const Settings = ({ setScale, canvasRef, scale, download }: Props) => {
+const Settings = ({ already, setScale, canvasRef, scale, download }: Props) => {
   const dialogRef          = React.useRef<HTMLDialogElement>(null);
   const scaleRangeInputRef = React.useRef<HTMLInputElement>(null);
   const showModal          = React.useCallback(() => dialogRef.current?.showModal(), []);
@@ -34,6 +35,10 @@ const Settings = ({ setScale, canvasRef, scale, download }: Props) => {
   React.useEffect(() => document.addEventListener('keydown', keydownHandling, false), [keydownHandling]);
   React.useEffect(() => canvasRef.current?.addEventListener('click', clickHandling, false), [clickHandling, canvasRef]);
   React.useEffect(() => { if (dialogRef.current) { dialogPolyfill.registerDialog(dialogRef.current); } }, [dialogRef]);
+
+  if (!already) {
+    return null;
+  }
 
   return (
     <>

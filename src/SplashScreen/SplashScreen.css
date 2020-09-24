@@ -1,0 +1,26 @@
+.SplashScreen-h1 {
+  background: var(--color-midnight);
+  height: 100%;
+  pointer-events: none;
+  position: absolute;
+  margin: 0;
+  top: 0;
+  width: 100%;
+}
+
+.SplashScreen-h1.loaded {
+  transition: opacity 3s ease;
+  opacity: 0;
+}
+
+.SplashScreen-img-logo {
+  width: 33vmin;
+  position: absolute;
+  transform: translate(calc(50vw - 50%), calc(50vh - 50%));
+}
+
+.SplashScreen-img-star {
+  width: 10vmin;
+  position: absolute;
+  transform: translate(calc(66vw - 50%), calc(50vh + 100%));
+}

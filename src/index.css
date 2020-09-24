@@ -2,8 +2,8 @@
   --color-cloudy: #e6e6e6;
   --color-midnight: #353e48;
   --color-sky: #43b0ff;
-  --color-sunset: #ffbe43;
-  --color-starlight: #ff7043;
+  --color-sunset: #ff7043;
+  --color-starlight: #ffbe43;
 }
 
 html,
@@ -62,7 +62,7 @@ button:focus,
 .button:active,
 .button:hover,
 .button:focus {
-  background: var(--color-sky);
+  background: var(--color-starlight);
 }
 
 dt {

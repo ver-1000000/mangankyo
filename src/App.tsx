@@ -1,6 +1,7 @@
 import React from 'react';
 
 import './App.css';
+import SplashScreen from './SplashScreen/SplashScreen';
 import Settings from './Settings/Settings';
 
 /**
@@ -16,11 +17,12 @@ export interface DownloadOptions {
  */
 interface PlayOptions {
   scale: number;
+  setAlready: React.Dispatch<boolean>;
   setPatternCanvas: React.Dispatch<HTMLCanvasElement>;
 }
 
 /**
- * 引数がNullableならエラーを投げる
+ * 引数がNullableならエラーを投げるアサーション関数。
  */
 function assertIsDefined<T>(val: T): asserts val is NonNullable<T> {
   if (val == null) {
@@ -42,7 +44,7 @@ const now = () => new Date().toLocaleString('ja-JP', {
 }).replace(/\D/g, '');
 
 /**
- * 度（deg）を受け取ってラジアン角として返却する。
+ * 度（deg）を受け取ってラジアン角として返却するお助け関数。
  */
 const rad = (deg: number) => deg * Math.PI / 180;
 
@@ -81,7 +83,7 @@ const getTriangleCanvas = (video: HTMLVideoElement, { scale }: { scale: number }
 };
 
 /**
- * シームレス化されたパターン用のcanvasを返す。
+ * シームレス化されたパターン用のCanvasRenderingContext2Dを返す。
  */
 const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
   const [canvas, ctx] = createCanvas({ width: triangle.width * 3, height: triangle.height * 2 });
@@ -115,8 +117,8 @@ const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
  */
 const play = async (canvas: HTMLCanvasElement | null, options: PlayOptions) => {
   assertIsDefined(canvas);
-  const streamPromsie     = navigator.mediaDevices.getUserMedia({ audio: false, video: true });
-  const stream            = await streamPromsie.catch(err => alert(err.name + ': ' + err.message));
+  const streamPromsie = navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+  const stream        = await streamPromsie.catch(err => alert(err.name + ': ' + err.message));
   const video             = Object.assign(document.createElement('video'), { srcObject: stream, onloadeddata });
   const ctx               = canvas.getContext('2d') as CanvasRenderingContext2D;
   const { width, height } = canvas.getBoundingClientRect();
@@ -129,7 +131,7 @@ const play = async (canvas: HTMLCanvasElement | null, options: PlayOptions) => {
     options.setPatternCanvas(patternCanvasCtx.canvas);
     requestAnimationFrame(update);
   };
-  video.play().then(() => update());
+  video.play().then(() => update()).then(() => options.setAlready(true));
 };
 
 /**
@@ -154,16 +156,19 @@ const downloadImage = (main: HTMLCanvasElement | null, pattern: HTMLCanvasElemen
 };
 
 const App = () => {
+  const [already, setAlready]             = React.useState<boolean>(false);
   const [scale, setScale]                 = React.useState<number>(0.5);
   const [patternCanvas, setPatternCanvas] = React.useState<HTMLCanvasElement | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const download  = React.useCallback((options: DownloadOptions) => downloadImage(canvasRef.current, patternCanvas, options), [patternCanvas]);
-  React.useEffect(() => { play(canvasRef.current, { scale, setPatternCanvas }); }, [scale]);
+  React.useEffect(() => { play(canvasRef.current, { scale, setPatternCanvas, setAlready }); }, [scale]);
   return (
     <>
       <canvas ref={canvasRef} className="App-canvas"></canvas>
+      <SplashScreen already={already} />
       <Settings
         className="App-Settings"
+        already={already}
         scale={scale}
         setScale={setScale}
         download={download}

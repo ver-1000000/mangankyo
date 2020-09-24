@@ -1,10 +1,20 @@
+:root {
+  --color-cloudy: #e6e6e6;
+  --color-midnight: #353e48;
+  --color-sky: #43b0ff;
+  --color-sunset: #ffbe43;
+  --color-starlight: #ff7043;
+}
+
 html,
 body {
   height: 100%;
 }
 
 html {
+  color: var(--color-cloudy);
   font-size: 10px;
+  font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
 }
 
 body {
@@ -13,4 +23,64 @@ body {
 
 #root {
   height: 100%;
+}
+
+a {
+  color : var(--color-sky);
+}
+
+a:visited {
+  color : var(--color-sunset);
+}
+
+a:active,
+a:hover {
+  color : var(--color-starlight);
+}
+
+input {
+  display: block;
+  width: 100%;
+}
+
+button,
+.button {
+  background: var(--color-midnight);
+  color: inherit;
+  cursor: pointer;
+  border-radius: 1rem;
+  border: 0.1rem solid var(--color-cloudy);
+  display: block;
+  line-height: 1.5;
+  margin: auto;
+  padding: 0 1rem;
+}
+
+button:active,
+button:hover,
+button:focus,
+.button:active,
+.button:hover,
+.button:focus {
+  background: var(--color-sky);
+}
+
+dt {
+  font-weight: bold;
+  margin: .5rem;
+}
+
+dd {
+  margin: 1rem;
+}
+
+output {
+  display: block;
+  text-align: center;
+}
+
+small {
+  display: block;
+  font-size: .7rem;
+  margin: 1rem;
 }

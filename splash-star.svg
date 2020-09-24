@@ -1,0 +1,23 @@
+<svg width="128" height="80" version="1.1" viewBox="0 0 29.48 14.805" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .stardust {
+      fill: #ff7043;
+    }
+
+    .stardust:nth-child(1) { animation: twinkle 2s -1s ease alternate infinite; }
+    .stardust:nth-child(2) { animation: twinkle 2s -2s ease alternate infinite; }
+    .stardust:nth-child(3) { animation: twinkle 2s -3s ease alternate infinite; }
+
+    .stardust:nth-child(3) {
+    }
+
+    @keyframes twinkle {
+      0% { transform: translate(0, 0); }
+      100% { fill: #ffbe43; transform: translate(0, -10%); }
+    }</style>
+  <g transform="translate(-99.771 -111.09)">
+    <path class="stardust" d="m114.53 119.98v-6.6532l5.7618 3.3266c-1.9206 1.1089-3.8412 2.2177-5.7618 3.3266z"/>
+    <path class="stardust" d="m123.92 125.55-2.9638-2.9638 4.0487-1.0848c-0.36157 1.3496-0.72324 2.6991-1.0849 4.0486z" />
+    <path class="stardust" d="m107.45 125.89h-3.6006c0.60011-1.0394 1.2002-2.0788 1.8003-3.1182 0.60012 1.0394 1.2002 2.0788 1.8003 3.1182z"/>
+  </g>
+</svg>

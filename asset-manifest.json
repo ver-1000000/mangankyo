@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/mangankyo/static/css/main.5dca9d97.chunk.css",
+    "main.js": "/mangankyo/static/js/main.6da2fbd7.chunk.js",
+    "main.js.map": "/mangankyo/static/js/main.6da2fbd7.chunk.js.map",
+    "runtime-main.js": "/mangankyo/static/js/runtime-main.9d0c08a3.js",
+    "runtime-main.js.map": "/mangankyo/static/js/runtime-main.9d0c08a3.js.map",
+    "static/css/2.a5c636dd.chunk.css": "/mangankyo/static/css/2.a5c636dd.chunk.css",
+    "static/js/2.d1a01107.chunk.js": "/mangankyo/static/js/2.d1a01107.chunk.js",
+    "static/js/2.d1a01107.chunk.js.map": "/mangankyo/static/js/2.d1a01107.chunk.js.map",
+    "index.html": "/mangankyo/index.html",
+    "precache-manifest.1ad62e5f80cf9add61fbb4017922107d.js": "/mangankyo/precache-manifest.1ad62e5f80cf9add61fbb4017922107d.js",
+    "service-worker.js": "/mangankyo/service-worker.js",
+    "static/css/2.a5c636dd.chunk.css.map": "/mangankyo/static/css/2.a5c636dd.chunk.css.map",
+    "static/css/main.5dca9d97.chunk.css.map": "/mangankyo/static/css/main.5dca9d97.chunk.css.map",
+    "static/js/2.d1a01107.chunk.js.LICENSE.txt": "/mangankyo/static/js/2.d1a01107.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.9d0c08a3.js",
+    "static/css/2.a5c636dd.chunk.css",
+    "static/js/2.d1a01107.chunk.js",
+    "static/css/main.5dca9d97.chunk.css",
+    "static/js/main.6da2fbd7.chunk.js"
+  ]
+}

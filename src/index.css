@@ -65,6 +65,18 @@ button:focus,
   background: var(--color-starlight);
 }
 
+button.sky,
+.button.sky {
+  border-color: var(--color-sky);
+  color: var(--color-sky);
+}
+
+button.sunset,
+.button.sunset {
+  border-color: var(--color-sunset);
+  color: var(--color-sunset);
+}
+
 dt {
   font-weight: bold;
   margin: .5rem;

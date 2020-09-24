@@ -1,10 +1,15 @@
 @import '~dialog-polyfill/dialog-polyfill.css';
 
 .Settings-dialog {
-  background: var(--color-midnight) no-repeat bottom right / 10rem;
+  background: var(--color-midnight) url(/splash-star.svg) no-repeat bottom right / 10rem;
   border-radius: 1rem;
   border: 0.1rem solid var(--color-cloudy);
   box-shadow: 0 0 0.3rem #ffbb26, 0 0 0.2rem #ffbb26 inset;
   color: inherit;
   max-width: calc(100% - 4rem);
+  min-width: 35rem;
+}
+
+.Settings-footer {
+  margin: 3rem;
 }

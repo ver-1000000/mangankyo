@@ -145,19 +145,19 @@ const play = async (video: HTMLVideoElement, { canvas, scale, facingMode, setPat
     if (!video.paused) { requestAnimationFrame(update); }
   };
   await video.play().then(() => update()).then(() => setAlready(true));
-  return video;
+  return stream;
 };
 
 /**
  * 渡されたcanvasからpngを生成し、ダウンロードさせる。
  * {@param pattern} options.typeが"pattern"のとき、`pattern`のwidth/heightを利用して`main`を切り抜く
  */
-const downloadImage = (main: HTMLCanvasElement | null, pattern: HTMLCanvasElement | null, options: DownloadOptions) => {
-  assertIsDefined(main);
+const downloadCallback = (canvasRef: React.RefObject<HTMLCanvasElement>, pattern: HTMLCanvasElement | null) => (options: DownloadOptions) => {
+  assertIsDefined(canvasRef.current);
   assertIsDefined(pattern);
-  const { width, height } = options.type === 'display' ? main : pattern;
+  const { width, height } = options.type === 'display' ? canvasRef.current : pattern;
   const [canvas, ctx] = createCanvas({ width, height });
-  ctx.drawImage(main, 0, 0);
+  ctx.drawImage(canvasRef.current, 0, 0);
   const anchor = document.createElement('a');
   const img    = document.createElement('img');
   document.body.appendChild(anchor);
@@ -169,22 +169,42 @@ const downloadImage = (main: HTMLCanvasElement | null, pattern: HTMLCanvasElemen
   img.remove();
 };
 
+/**
+ * オンメモリー上でAPIを提供し続けるためのvideo。
+ */
+const video = document.createElement('video');
+
+/**
+ * 値の変更に連動し、videoの再生と停止などを行う。
+ */
+const effectCallback = ({
+  canvasRef,
+  scale,
+  facingMode,
+  setPatternCanvas,
+  setAlready
+}: Omit<PlayOptions, 'canvas'> & { canvasRef: React.RefObject<HTMLCanvasElement> }) => () => {
+  const streamPromise = play(video, { canvas: canvasRef.current, scale, facingMode, setPatternCanvas, setAlready });
+  return () => {
+    setAlready(false);
+    streamPromise.then(stream => {
+      /** streanのリリースとvideoのポーズを行い、既存のイベントループを停止する。 */
+      if (stream) { stream.getTracks().forEach(track => track.stop()); }
+      if (!video.paused) { video.pause(); }
+      setAlready(true);
+    });
+  };
+};
+
 const App = () => {
   const [already, setAlready]             = React.useState<boolean>(false);
   const [facingMode, setFacingMode]       = React.useState<PlayOptions['facingMode']>('environment');
   const [scale, setScale]                 = React.useState<number>(0.5);
   const [patternCanvas, setPatternCanvas] = React.useState<HTMLCanvasElement | null>(null);
-  const video     = document.createElement('video');
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const download  = React.useCallback((options: DownloadOptions) => downloadImage(canvasRef.current, patternCanvas, options), [patternCanvas]);
-  React.useEffect(() => {
-    play(video, { canvas: canvasRef.current, scale, facingMode, setPatternCanvas, setAlready });
-    return () => {
-      /** streanのリリースとvideoのポーズを行い、既存のイベントループを停止する。 */
-      if (video.srcObject instanceof MediaStream) { video.srcObject.getTracks().forEach(track => track.stop()); }
-      video.pause();
-    };
-  }, [video, scale, facingMode]);
+  const canvasRef                         = React.useRef<HTMLCanvasElement>(null);
+  const download                          = React.useCallback(downloadCallback(canvasRef, patternCanvas), [patternCanvas]);
+  React.useEffect(effectCallback({ canvasRef, scale, facingMode, setPatternCanvas, setAlready }), [scale, facingMode]);
+
   return (
     <>
       <canvas ref={canvasRef} className="App-canvas"></canvas>

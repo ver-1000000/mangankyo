@@ -30,7 +30,6 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
   const scaleRangeInputRef = React.useRef<HTMLInputElement>(null);
   const showModal          = React.useCallback(() => dialogRef.current?.showModal(), []);
   const closeModal         = React.useCallback(() => dialogRef.current?.close(), []);
-  const changeInput        = React.useCallback(() => setScale(scaleRangeInputRef.current?.valueAsNumber || 0.5), [setScale]);
   const keydownHandling    = React.useCallback(keydownHandlingCallback(dialogRef, closeModal, showModal), [closeModal, showModal]);
   const clickHandling      = React.useCallback(clickHandlingCallback(showModal), [showModal]);
   const toggleFacingMode   = React.useCallback(() => setFacingMode(facingMode === 'user' ? 'environment' : 'user'), [facingMode, setFacingMode]);
@@ -49,41 +48,41 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
           <dl>
             <dt>パターンの大きさ</dt>
             <dd>
-              <output>{scale}</output>
+              <output>{scaleRangeInputRef.current?.value}</output>
+            </dd>
+            <dd>
               <input
                 type="range"
                 step="0.1"
                 min="0.1"
                 max="2.0"
-                value={scale}
+                defaultValue={scale}
                 ref={scaleRangeInputRef}
-                onChange={changeInput}
-                />
+              />
             </dd>
-          </dl>
-          <dl>
-            <dt>全体のキャンバス画像をダウンロード</dt>
             <dd>
-              <small>
-                ダウンロードが上手く行かない場合は、<br />
-                キャンバスを<em>ロングタップ/右クリック</em>してダウンロードしてください。
-              </small>
-              <button type="button" onClick={() => download({ type: 'display' })}>ダウンロード</button>
-            </dd>
-            <dt>最小単位のパターン画像をダウンロード</dt>
-            <dd>
-              <small>
-                壁紙などに利用しやすい、<br />
-                切れ目のないシームレスなリピート用最小パターン画像をダウンロードできます。
-              </small>
-              <button type="button" onClick={() => download({ type: 'pattern' })}>ダウンロード</button>
+              <button type="button" onClick={() => setScale(scaleRangeInputRef.current?.valueAsNumber || 0.5)}>
+                適用する
+              </button>
             </dd>
           </dl>
           <dl>
             <dt>フロントカメラ / リアカメラ</dt>
             <dd>
-              <small>※ 試験的な機能です。</small>
+              <small>※ デバイスが認識できない場合は切り替わりません。</small>
               <button type="button" onClick={toggleFacingMode}>切り替える</button>
+            </dd>
+          </dl>
+        </section>
+        <section>
+          <h2>ダウンロード</h2>
+          <dl>
+            <dt>表示されているキャンバス画像を保存</dt>
+            <dd>
+              <button type="button" onClick={() => download({ type: 'display' })}>画面全体</button>
+            </dd>
+            <dd>
+              <button type="button" onClick={() => download({ type: 'pattern' })}>最小パターン</button>
             </dd>
           </dl>
         </section>
@@ -100,7 +99,9 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
             </dd>
           </dl>
         </section>
-        <button type="button" onClick={closeModal}>close</button>
+        <footer className="Settings-footer">
+          <button type="button" className="sky" onClick={closeModal}>close</button>
+        </footer>
       </dialog>
     </>
   );

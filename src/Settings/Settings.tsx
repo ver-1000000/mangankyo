@@ -1,6 +1,7 @@
 import React from 'react';
 import dialogPolyfill from 'dialog-polyfill';
 
+import { DownloadOptions } from '../App';
 import './Settings.css';
 
 interface Props {
@@ -8,7 +9,7 @@ interface Props {
  canvasRef: React.RefObject<HTMLCanvasElement>;
  scale: number;
  setScale: React.Dispatch<React.SetStateAction<number>>;
- download: () => void;
+ download: (option: DownloadOptions) => void;
 }
 
 const keydownHandlingCallback =
@@ -21,8 +22,7 @@ const keydownHandlingCallback =
 
 const clickHandlingCallback = (showModal: () => void) => () => showModal();;
 
-const Settings = (props: Props) => {
-  const { setScale, canvasRef, scale } = props;
+const Settings = ({ setScale, canvasRef, scale, download }: Props) => {
   const dialogRef          = React.useRef<HTMLDialogElement>(null);
   const scaleRangeInputRef = React.useRef<HTMLInputElement>(null);
   const showModal          = React.useCallback(() => dialogRef.current?.showModal(), []);
@@ -56,13 +56,21 @@ const Settings = (props: Props) => {
             </dd>
           </dl>
           <dl>
-            <dt>現在表示されているキャンバス画像をダウンロード</dt>
+            <dt>全体のキャンバス画像をダウンロード</dt>
             <dd>
               <small>
                 ダウンロードが上手く行かない場合は、<br />
                 キャンバスを<em>ロングタップ/右クリック</em>してダウンロードしてください。
               </small>
-              <button type="button" onClick={props.download}>ダウンロード</button>
+              <button type="button" onClick={() => download({ type: 'display' })}>ダウンロード</button>
+            </dd>
+            <dt>最小単位のパターン画像をダウンロード</dt>
+            <dd>
+              <small>
+                壁紙などに利用しやすい、<br />
+                切れ目のないシームレスなリピート用最小パターン画像をダウンロードできます。
+              </small>
+              <button type="button" onClick={() => download({ type: 'pattern' })}>ダウンロード</button>
             </dd>
           </dl>
         </section>

@@ -6,5 +6,5 @@
   border: 0.1rem solid var(--color-cloudy);
   box-shadow: 0 0 0.3rem #ffbb26, 0 0 0.2rem #ffbb26 inset;
   color: inherit;
-  margin: 1rem;
+  max-width: calc(100% - 4rem);
 }

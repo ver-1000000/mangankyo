@@ -4,6 +4,22 @@ import './App.css';
 import Settings from './Settings/Settings';
 
 /**
+ * ダウンロード時のオプション。
+ */
+export interface DownloadOptions {
+  /** *"display"時は画面全体を、"pattern"時は最小パターンをダウンロードする。 */
+  type: 'display' | 'pattern';
+}
+
+/**
+ * `play`関数に渡すオプション。
+ */
+interface PlayOptions {
+  scale: number;
+  setPatternCanvas: React.Dispatch<HTMLCanvasElement>;
+}
+
+/**
  * 引数がNullableならエラーを投げる
  */
 function assertIsDefined<T>(val: T): asserts val is NonNullable<T> {
@@ -67,7 +83,7 @@ const getTriangleCanvas = (video: HTMLVideoElement, { scale }: { scale: number }
 /**
  * シームレス化されたパターン用のcanvasを返す。
  */
-const getPattern = (triangle: HTMLCanvasElement) => {
+const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
   const [canvas, ctx] = createCanvas({ width: triangle.width * 3, height: triangle.height * 2 });
   const drawTransform = (transform: { rotate?: number, scaleX?: number, scaleY?: number, translateX?: number, translateY?: number }) => {
     const { rotate = 0, scaleX = 1, scaleY = 1, translateX = 0, translateY = 0 } = transform;
@@ -91,13 +107,13 @@ const getPattern = (triangle: HTMLCanvasElement) => {
   drawTransform({ rotate: 240, scaleY: 1,  translateX: 0,                    translateY: triangle.height * 2 });
   drawTransform({ rotate: 240, scaleY: -1, translateX: 0,                    translateY: -triangle.height * 2 });
   drawTransform({ rotate: 240, scaleY: -1, translateX: triangle.width * 1.5, translateY: triangle.height });
-  return ctx.createPattern(canvas, 'repeat') as CanvasPattern;
+  return ctx;
 };
 
 /**
  * MediaStreamを読み取り、requestAnimationFrameによるイベントループを開始する。
  */
-const play = async (canvas: HTMLCanvasElement | null, scale: number) => {
+const play = async (canvas: HTMLCanvasElement | null, options: PlayOptions) => {
   assertIsDefined(canvas);
   const streamPromsie     = navigator.mediaDevices.getUserMedia({ audio: false, video: true });
   const stream            = await streamPromsie.catch(err => alert(err.name + ': ' + err.message));
@@ -106,16 +122,26 @@ const play = async (canvas: HTMLCanvasElement | null, scale: number) => {
   const { width, height } = canvas.getBoundingClientRect();
   Object.assign(canvas, { width, height });
   const update = () => {
-    const triangleCanvas = getTriangleCanvas(video, { scale });
-    ctx.fillStyle        = getPattern(triangleCanvas);
+    const triangleCanvas   = getTriangleCanvas(video, { scale: options.scale });
+    const patternCanvasCtx = getPatternCanvasContext(triangleCanvas);
+    ctx.fillStyle          = patternCanvasCtx.createPattern(patternCanvasCtx.canvas, 'repeat')!;
     ctx.fillRect(0, 0, width, height);
+    options.setPatternCanvas(patternCanvasCtx.canvas);
     requestAnimationFrame(update);
   };
   video.play().then(() => update());
 };
 
-const downloadCanvasImage = (canvas: HTMLCanvasElement | null) => {
-  assertIsDefined(canvas);
+/**
+ * 渡されたcanvasからpngを生成し、ダウンロードさせる。
+ * {@param pattern} options.typeが"pattern"のとき、`pattern`のwidth/heightを利用して`main`を切り抜く
+ */
+const downloadImage = (main: HTMLCanvasElement | null, pattern: HTMLCanvasElement | null, options: DownloadOptions) => {
+  assertIsDefined(main);
+  assertIsDefined(pattern);
+  const { width, height } = options.type === 'display' ? main : pattern;
+  const [canvas, ctx] = createCanvas({ width, height });
+  ctx.drawImage(main, 0, 0);
   const anchor = document.createElement('a');
   const img    = document.createElement('img');
   document.body.appendChild(anchor);
@@ -128,10 +154,11 @@ const downloadCanvasImage = (canvas: HTMLCanvasElement | null) => {
 };
 
 const App = () => {
-  const [scale, setScale] = React.useState<number>(0.5);
-  const canvasRef         = React.useRef<HTMLCanvasElement>(null);
-  const download          = React.useCallback(() => downloadCanvasImage(canvasRef.current), []);
-  React.useEffect(() => { play(canvasRef.current, scale); }, [scale]);
+  const [scale, setScale]                 = React.useState<number>(0.5);
+  const [patternCanvas, setPatternCanvas] = React.useState<HTMLCanvasElement | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const download  = React.useCallback((options: DownloadOptions) => downloadImage(canvasRef.current, patternCanvas, options), [patternCanvas]);
+  React.useEffect(() => { play(canvasRef.current, { scale, setPatternCanvas }); }, [scale]);
   return (
     <>
       <canvas ref={canvasRef} className="App-canvas"></canvas>

@@ -10,6 +10,8 @@ interface Props {
   canvasRef: React.RefObject<HTMLCanvasElement>;
   scale: number;
   setScale: React.Dispatch<React.SetStateAction<number>>;
+  facingMode: MediaTrackConstraints['facingMode'];
+  setFacingMode: React.Dispatch<React.SetStateAction<this['facingMode']>>;
   download: (option: DownloadOptions) => void;
 }
 
@@ -23,7 +25,7 @@ const keydownHandlingCallback =
 
 const clickHandlingCallback = (showModal: () => void) => () => showModal();
 
-const Settings = ({ already, setScale, canvasRef, scale, download }: Props) => {
+const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasRef, download }: Props) => {
   const dialogRef          = React.useRef<HTMLDialogElement>(null);
   const scaleRangeInputRef = React.useRef<HTMLInputElement>(null);
   const showModal          = React.useCallback(() => dialogRef.current?.showModal(), []);
@@ -31,14 +33,13 @@ const Settings = ({ already, setScale, canvasRef, scale, download }: Props) => {
   const changeInput        = React.useCallback(() => setScale(scaleRangeInputRef.current?.valueAsNumber || 0.5), [setScale]);
   const keydownHandling    = React.useCallback(keydownHandlingCallback(dialogRef, closeModal, showModal), [closeModal, showModal]);
   const clickHandling      = React.useCallback(clickHandlingCallback(showModal), [showModal]);
+  const toggleFacingMode   = React.useCallback(() => setFacingMode(facingMode === 'user' ? 'environment' : 'user'), [facingMode, setFacingMode]);
 
   React.useEffect(() => document.addEventListener('keydown', keydownHandling, false), [keydownHandling]);
   React.useEffect(() => canvasRef.current?.addEventListener('click', clickHandling, false), [clickHandling, canvasRef]);
   React.useEffect(() => { if (dialogRef.current) { dialogPolyfill.registerDialog(dialogRef.current); } }, [dialogRef]);
 
-  if (!already) {
-    return null;
-  }
+  if (!already) { return null; }
 
   return (
     <>
@@ -76,6 +77,13 @@ const Settings = ({ already, setScale, canvasRef, scale, download }: Props) => {
                 切れ目のないシームレスなリピート用最小パターン画像をダウンロードできます。
               </small>
               <button type="button" onClick={() => download({ type: 'pattern' })}>ダウンロード</button>
+            </dd>
+          </dl>
+          <dl>
+            <dt>フロントカメラ / リアカメラ</dt>
+            <dd>
+              <small>※ 試験的な機能です。</small>
+              <button type="button" onClick={toggleFacingMode}>切り替える</button>
             </dd>
           </dl>
         </section>

@@ -16,9 +16,11 @@ export interface DownloadOptions {
  * `play`関数に渡すオプション。
  */
 interface PlayOptions {
+  canvas: HTMLCanvasElement | null;
   scale: number;
   setAlready: React.Dispatch<boolean>;
   setPatternCanvas: React.Dispatch<HTMLCanvasElement>;
+  facingMode: MediaTrackConstraints['facingMode'];
 }
 
 /**
@@ -113,25 +115,37 @@ const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
 };
 
 /**
+ * エラーハンドリング用関数。
+ */
+const errorHandling = (err: any) => {
+  if (err instanceof OverconstrainedError) {
+    alert(`${err.name}:\n  要求されたデバイスが見つかりません。\n  設定を変更してください。`)
+  } else {
+    alert(err.name + ': ' + err.message);
+  }
+}
+
+/**
  * MediaStreamを読み取り、requestAnimationFrameによるイベントループを開始する。
  */
-const play = async (canvas: HTMLCanvasElement | null, options: PlayOptions) => {
+const play = async (video: HTMLVideoElement, { canvas, scale, facingMode, setPatternCanvas, setAlready }: PlayOptions) => {
   assertIsDefined(canvas);
-  const streamPromsie = navigator.mediaDevices.getUserMedia({ audio: false, video: true });
-  const stream        = await streamPromsie.catch(err => alert(err.name + ': ' + err.message));
-  const video             = Object.assign(document.createElement('video'), { srcObject: stream, onloadeddata });
+  const streamPromsie     = navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } });
+  const stream            = await streamPromsie.catch(errorHandling);
+  video.srcObject         = stream || null;
   const ctx               = canvas.getContext('2d') as CanvasRenderingContext2D;
   const { width, height } = canvas.getBoundingClientRect();
   Object.assign(canvas, { width, height });
   const update = () => {
-    const triangleCanvas   = getTriangleCanvas(video, { scale: options.scale });
+    const triangleCanvas   = getTriangleCanvas(video, { scale });
     const patternCanvasCtx = getPatternCanvasContext(triangleCanvas);
     ctx.fillStyle          = patternCanvasCtx.createPattern(patternCanvasCtx.canvas, 'repeat')!;
     ctx.fillRect(0, 0, width, height);
-    options.setPatternCanvas(patternCanvasCtx.canvas);
-    requestAnimationFrame(update);
+    setPatternCanvas(patternCanvasCtx.canvas);
+    if (!video.paused) { requestAnimationFrame(update); }
   };
-  video.play().then(() => update()).then(() => options.setAlready(true));
+  await video.play().then(() => update()).then(() => setAlready(true));
+  return video;
 };
 
 /**
@@ -157,11 +171,20 @@ const downloadImage = (main: HTMLCanvasElement | null, pattern: HTMLCanvasElemen
 
 const App = () => {
   const [already, setAlready]             = React.useState<boolean>(false);
+  const [facingMode, setFacingMode]       = React.useState<PlayOptions['facingMode']>('environment');
   const [scale, setScale]                 = React.useState<number>(0.5);
   const [patternCanvas, setPatternCanvas] = React.useState<HTMLCanvasElement | null>(null);
+  const video     = document.createElement('video');
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const download  = React.useCallback((options: DownloadOptions) => downloadImage(canvasRef.current, patternCanvas, options), [patternCanvas]);
-  React.useEffect(() => { play(canvasRef.current, { scale, setPatternCanvas, setAlready }); }, [scale]);
+  React.useEffect(() => {
+    play(video, { canvas: canvasRef.current, scale, facingMode, setPatternCanvas, setAlready });
+    return () => {
+      /** streanのリリースとvideoのポーズを行い、既存のイベントループを停止する。 */
+      if (video.srcObject instanceof MediaStream) { video.srcObject.getTracks().forEach(track => track.stop()); }
+      video.pause();
+    };
+  }, [video, scale, facingMode]);
   return (
     <>
       <canvas ref={canvasRef} className="App-canvas"></canvas>
@@ -171,6 +194,8 @@ const App = () => {
         already={already}
         scale={scale}
         setScale={setScale}
+        facingMode={facingMode}
+        setFacingMode={setFacingMode}
         download={download}
         canvasRef={canvasRef}
       />

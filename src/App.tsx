@@ -184,13 +184,15 @@ const effectCallback = ({
   setPatternCanvas,
   setAlready
 }: Omit<PlayOptions, 'canvas'> & { canvasRef: React.RefObject<HTMLCanvasElement> }) => () => {
+  const clearStream = (x: HTMLVideoElement['srcObject']) => x instanceof MediaStream && x.getTracks().forEach(y => y.stop());
+  clearStream(video.srcObject);
   const streamPromise = play(video, { canvas: canvasRef.current, scale, facingMode, setPatternCanvas, setAlready });
   return () => {
     setAlready(false);
     streamPromise.then(stream => {
       /** streanのリリースとvideoのポーズを行い、既存のイベントループを停止する。 */
-      if (stream) { stream.getTracks().forEach(track => track.stop()); }
       if (!video.paused) { video.pause(); }
+      clearStream(stream || null);
       setAlready(true);
     });
   };

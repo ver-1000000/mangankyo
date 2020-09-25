@@ -3,7 +3,7 @@ import React from 'react';
 import './SplashScreen.css';
 
 const SplashScreen = ({ already }: { already: boolean }) => {
-  const h1Ref = React.useRef<HTMLDivElement>(null);
+  const h1Ref = React.useRef<HTMLHeadingElement>(null);
   React.useEffect(() => h1Ref.current?.classList[already ? 'add' : 'remove']('loaded'), [already]);
   return (
     <h1 className="SplashScreen-h1" title="万顔鏡" ref={h1Ref}>

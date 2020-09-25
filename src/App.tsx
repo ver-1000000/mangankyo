@@ -34,6 +34,18 @@ function assertIsDefined<T>(val: T): asserts val is NonNullable<T> {
 }
 
 /**
+ * エラーハンドリング用関数。
+ */
+const errorOnAlert = (error: Error) => {
+  if (error instanceof OverconstrainedError) {
+    alert(`${error.name}:\n要求されたデバイスが見つかりません。\n設定を変更してください。`)
+  } else {
+    alert(`${error.name}:\n${error.message}`);
+  }
+  return null;
+}
+
+/**
  * 現在時刻を取得するお助け関数。
  */
 const now = () => new Date().toLocaleString('ja-JP', {
@@ -115,23 +127,14 @@ const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
 };
 
 /**
- * エラーハンドリング用関数。
- */
-const errorHandling = (err: any) => {
-  if (err instanceof OverconstrainedError) {
-    alert(`${err.name}:\n  要求されたデバイスが見つかりません。\n  設定を変更してください。`)
-  } else {
-    alert(err.name + ': ' + err.message);
-  }
-}
-
-/**
  * MediaStreamを読み取り、requestAnimationFrameによるイベントループを開始する。
  */
 const play = async (video: HTMLVideoElement, { canvas, scale, facingMode, setPatternCanvas, setAlready }: PlayOptions) => {
   assertIsDefined(canvas);
+   // モバイルでは新しいストリームを取得する前に、trackをすべてstopする必要がある
+  if (video.srcObject instanceof MediaStream) { video.srcObject.getTracks().forEach(track => track.stop()); }
   const streamPromsie     = navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } });
-  const stream            = await streamPromsie.catch(errorHandling);
+  const stream            = await streamPromsie.catch(errorOnAlert);
   video.srcObject         = stream || null;
   const ctx               = canvas.getContext('2d') as CanvasRenderingContext2D;
   const { width, height } = canvas.getBoundingClientRect();
@@ -172,40 +175,41 @@ const downloadCallback = (canvasRef: React.RefObject<HTMLCanvasElement>, pattern
 /**
  * オンメモリー上でAPIを提供し続けるためのvideo。
  */
-const video = document.createElement('video');
+const video = (() => {
+  const internalVideo = document.createElement('video');
+  ['playsinline', 'muted', 'autoplay'].forEach(attr => internalVideo.setAttribute(attr, '')); // Mobile Safariでの再生に必須
+  return internalVideo;
+})();
 
 /**
  * 値の変更に連動し、videoの再生と停止などを行う。
  */
-const effectCallback = ({
+const startPlayCallback = ({
   canvasRef,
   scale,
   facingMode,
   setPatternCanvas,
   setAlready
 }: Omit<PlayOptions, 'canvas'> & { canvasRef: React.RefObject<HTMLCanvasElement> }) => () => {
-  const clearStream = (x: HTMLVideoElement['srcObject']) => x instanceof MediaStream && x.getTracks().forEach(y => y.stop());
-  clearStream(video.srcObject);
+  if (typeof navigator.mediaDevices?.getUserMedia !== `function`) {
+    errorOnAlert(new Error('お使いのブラウザはgetUserMedia()に未対応です。\n他のブラウザをご利用ください。'));
+    return;
+  }
   const streamPromise = play(video, { canvas: canvasRef.current, scale, facingMode, setPatternCanvas, setAlready });
   return () => {
     setAlready(false);
-    streamPromise.then(stream => {
-      /** streanのリリースとvideoのポーズを行い、既存のイベントループを停止する。 */
-      if (!video.paused) { video.pause(); }
-      clearStream(stream || null);
-      setAlready(true);
-    });
+    streamPromise.then(() => video.paused || video.pause()).then(() => setAlready(true));
   };
 };
 
 const App = () => {
   const [already, setAlready]             = React.useState<boolean>(false);
-  const [facingMode, setFacingMode]       = React.useState<PlayOptions['facingMode']>('environment');
+  const [facingMode, setFacingMode]       = React.useState<PlayOptions['facingMode']>('user');
   const [scale, setScale]                 = React.useState<number>(0.5);
   const [patternCanvas, setPatternCanvas] = React.useState<HTMLCanvasElement | null>(null);
   const canvasRef                         = React.useRef<HTMLCanvasElement>(null);
   const download                          = React.useCallback(downloadCallback(canvasRef, patternCanvas), [patternCanvas]);
-  React.useEffect(effectCallback({ canvasRef, scale, facingMode, setPatternCanvas, setAlready }), [scale, facingMode]);
+  React.useEffect(startPlayCallback({ canvasRef, scale, facingMode, setPatternCanvas, setAlready }), [scale, facingMode]);
 
   return (
     <>

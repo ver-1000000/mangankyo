@@ -1,5 +1,4 @@
 import React from 'react';
-import dialogPolyfill from 'dialog-polyfill';
 
 import { DownloadOptions } from '../App';
 import './Settings.css';
@@ -15,28 +14,54 @@ interface Props {
   download: (option: DownloadOptions) => void;
 }
 
-const keydownHandlingCallback =
-  (dialogRef: React.RefObject<HTMLDialogElement>, closeModal: () => void, showModal: () => void) => (e: KeyboardEvent) => {
-  if (e.keyCode === 27) { // Escape
-    e.preventDefault();
-    dialogRef.current?.open ? closeModal() : showModal();
+/**
+ * モーダルの表示状態を切り替える。
+ */
+const toggleModal = ({ current }: React.RefObject<HTMLDialogElement>) => {
+  if (current == null) { return; }
+  if (current.open) {
+    current.close();
+  } else {
+    current.showModal();
   }
 };
 
-const clickHandlingCallback = (showModal: () => void) => () => showModal();
+/**
+ * キーダウンイベントの取り回し。 ESC押下時にモーダルの表示状態を切り替える。
+ */
+const keydownHandlingCallback = (dialogRef: React.RefObject<HTMLDialogElement>) => (e: KeyboardEvent) => {
+  if (e.keyCode === 27) { // Escape
+    e.preventDefault();
+    toggleModal(dialogRef);
+  }
+};
+
+/**
+ * クリックイベントの取り回し。 モーダルの表示状態を切り替える。
+ */
+const clickHandlingCallback = (dialogRef: React.RefObject<HTMLDialogElement>) => () => {
+  toggleModal(dialogRef);
+};
+
+/**
+ * フロントカメラ / リアカメラを切り替える。
+ */
+const toggleFacingModeHandlingCallback = (
+  setFacingMode: React.Dispatch<React.SetStateAction<MediaTrackConstraints['facingMode']>>,
+  facingMode:  MediaTrackConstraints['facingMode']
+) => () => {
+  setFacingMode(facingMode === 'user' ? 'environment' : 'user');
+}
 
 const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasRef, download }: Props) => {
-  const dialogRef          = React.useRef<HTMLDialogElement>(null);
-  const scaleRangeInputRef = React.useRef<HTMLInputElement>(null);
-  const showModal          = React.useCallback(() => dialogRef.current?.showModal(), []);
-  const closeModal         = React.useCallback(() => dialogRef.current?.close(), []);
-  const keydownHandling    = React.useCallback(keydownHandlingCallback(dialogRef, closeModal, showModal), [closeModal, showModal]);
-  const clickHandling      = React.useCallback(clickHandlingCallback(showModal), [showModal]);
-  const toggleFacingMode   = React.useCallback(() => setFacingMode(facingMode === 'user' ? 'environment' : 'user'), [facingMode, setFacingMode]);
+  const dialogRef                = React.useRef<HTMLDialogElement>(null);
+  const scaleRangeInputRef       = React.useRef<HTMLInputElement>(null);
+  const keydownHandling          = React.useCallback(keydownHandlingCallback(dialogRef), []);
+  const clickHandling            = React.useCallback(clickHandlingCallback(dialogRef), []);
+  const toggleFacingModeHandling = React.useCallback(toggleFacingModeHandlingCallback(setFacingMode, facingMode), []);
 
   React.useEffect(() => document.addEventListener('keydown', keydownHandling, false), [keydownHandling]);
   React.useEffect(() => canvasRef.current?.addEventListener('click', clickHandling, false), [clickHandling, canvasRef]);
-  React.useEffect(() => { if (dialogRef.current) { dialogPolyfill.registerDialog(dialogRef.current); } }, [dialogRef]);
 
   if (!already) { return null; }
 
@@ -70,7 +95,7 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
             <dt>フロントカメラ / リアカメラ</dt>
             <dd>
               <small>※ デバイスが認識できない場合は切り替わりません。</small>
-              <button type="button" onClick={toggleFacingMode}>切り替える</button>
+              <button type="button" onClick={toggleFacingModeHandling}>切り替える</button>
             </dd>
           </dl>
         </section>
@@ -100,7 +125,7 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
           </dl>
         </section>
         <footer className="Settings-footer">
-          <button type="button" className="sky" onClick={closeModal}>close</button>
+          <button type="button" className="sky" onClick={clickHandling}>close</button>
         </footer>
       </dialog>
     </>

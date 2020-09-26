@@ -16,6 +16,7 @@ export interface DownloadOptions {
  * `play`関数に渡すオプション。
  */
 interface PlayOptions {
+  video: HTMLVideoElement;
   canvas: HTMLCanvasElement | null;
   scale: number;
   setAlready: React.Dispatch<boolean>;
@@ -99,13 +100,13 @@ const getTriangleCanvas = (video: HTMLVideoElement, { scale }: { scale: number }
 /**
  * シームレス化されたパターン用のCanvasRenderingContext2Dを返す。
  */
-const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
+const getPatternCanvasContext = (triangle: HTMLCanvasElement, setPatternCanvas: React.Dispatch<HTMLCanvasElement>) => {
   const [canvas, ctx] = createCanvas({ width: triangle.width * 3, height: triangle.height * 2 });
-  const drawTransform = (transform: { rotate?: number, scaleX?: number, scaleY?: number, translateX?: number, translateY?: number }) => {
-    const { rotate = 0, scaleX = 1, scaleY = 1, translateX = 0, translateY = 0 } = transform;
+  const drawTransform = (transform: { rotate?: number, scaleY?: number, translateX?: number, translateY?: number }) => {
+    const { rotate = 0, scaleY = 1, translateX = 0, translateY = 0 } = transform;
     ctx.setTransform(1, 0, 0, 1,  canvas.width / 3, canvas.height / 2);
     ctx.rotate(rad(rotate));
-    ctx.scale(scaleX, scaleY);
+    ctx.scale(1, scaleY);
     ctx.translate(translateX, translateY);
     ctx.drawImage(triangle, -canvas.width / 3, -canvas.height / 2);
   }
@@ -123,7 +124,17 @@ const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
   drawTransform({ rotate: 240, scaleY: 1,  translateX: 0,                    translateY: triangle.height * 2 });
   drawTransform({ rotate: 240, scaleY: -1, translateX: 0,                    translateY: -triangle.height * 2 });
   drawTransform({ rotate: 240, scaleY: -1, translateX: triangle.width * 1.5, translateY: triangle.height });
-  return ctx;
+  setPatternCanvas(canvas);
+  return ctx.createPattern(ctx.canvas, 'repeat')!;
+};
+
+/**
+ * WebカメラのMediaStreamを返す。 初期化処理も行う。
+ */
+const getWebcamStream = async (video: HTMLVideoElement, facingMode: MediaTrackConstraints['facingMode']) => {
+   // モバイルでは新しいストリームを取得する前に、trackをすべてstopする必要がある
+  if (video.srcObject instanceof MediaStream) { video.srcObject.getTracks().forEach(track => track.stop()); }
+  return navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } }).catch(errorOnAlert);
 };
 
 /**
@@ -131,31 +142,28 @@ const getPatternCanvasContext = (triangle: HTMLCanvasElement) => {
  */
 const play = async (video: HTMLVideoElement, { canvas, scale, facingMode, setPatternCanvas, setAlready }: PlayOptions) => {
   assertIsDefined(canvas);
-   // モバイルでは新しいストリームを取得する前に、trackをすべてstopする必要がある
-  if (video.srcObject instanceof MediaStream) { video.srcObject.getTracks().forEach(track => track.stop()); }
-  const streamPromsie     = navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } });
-  const stream            = await streamPromsie.catch(errorOnAlert);
-  video.srcObject         = stream || null;
+  video.srcObject         = await getWebcamStream(video, facingMode);
   const ctx               = canvas.getContext('2d') as CanvasRenderingContext2D;
   const { width, height } = canvas.getBoundingClientRect();
   Object.assign(canvas, { width, height });
   const update = () => {
     const triangleCanvas   = getTriangleCanvas(video, { scale });
-    const patternCanvasCtx = getPatternCanvasContext(triangleCanvas);
-    ctx.fillStyle          = patternCanvasCtx.createPattern(patternCanvasCtx.canvas, 'repeat')!;
+    ctx.fillStyle          = getPatternCanvasContext(triangleCanvas, setPatternCanvas);
     ctx.fillRect(0, 0, width, height);
-    setPatternCanvas(patternCanvasCtx.canvas);
     if (!video.paused) { requestAnimationFrame(update); }
   };
   await video.play().then(() => update()).then(() => setAlready(true));
-  return stream;
+  return video.srcObject;
 };
 
 /**
  * 渡されたcanvasからpngを生成し、ダウンロードさせる。
  * {@param pattern} options.typeが"pattern"のとき、`pattern`のwidth/heightを利用して`main`を切り抜く
  */
-const downloadCallback = (canvasRef: React.RefObject<HTMLCanvasElement>, pattern: HTMLCanvasElement | null) => (options: DownloadOptions) => {
+const downloadCallback = (
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  pattern: HTMLCanvasElement | null
+) => (options: DownloadOptions) => {
   assertIsDefined(canvasRef.current);
   assertIsDefined(pattern);
   const { width, height } = options.type === 'display' ? canvasRef.current : pattern;
@@ -175,7 +183,7 @@ const downloadCallback = (canvasRef: React.RefObject<HTMLCanvasElement>, pattern
 /**
  * オンメモリー上でAPIを提供し続けるためのvideo。
  */
-const video = (() => {
+const VIDEO = (() => {
   const internalVideo = document.createElement('video');
   ['playsinline', 'muted', 'autoplay'].forEach(attr => internalVideo.setAttribute(attr, '')); // Mobile Safariでの再生に必須
   return internalVideo;
@@ -185,6 +193,7 @@ const video = (() => {
  * 値の変更に連動し、videoの再生と停止などを行う。
  */
 const startPlayCallback = ({
+  video,
   canvasRef,
   scale,
   facingMode,
@@ -195,7 +204,7 @@ const startPlayCallback = ({
     errorOnAlert(new Error('お使いのブラウザはgetUserMedia()に未対応です。\n他のブラウザをご利用ください。'));
     return;
   }
-  const streamPromise = play(video, { canvas: canvasRef.current, scale, facingMode, setPatternCanvas, setAlready });
+  const streamPromise = play(video, { video, canvas: canvasRef.current, scale, facingMode, setPatternCanvas, setAlready });
   return () => {
     setAlready(false);
     streamPromise.then(() => video.paused || video.pause()).then(() => setAlready(true));
@@ -209,7 +218,15 @@ const App = () => {
   const [patternCanvas, setPatternCanvas] = React.useState<HTMLCanvasElement | null>(null);
   const canvasRef                         = React.useRef<HTMLCanvasElement>(null);
   const download                          = React.useCallback(downloadCallback(canvasRef, patternCanvas), [patternCanvas]);
-  React.useEffect(startPlayCallback({ canvasRef, scale, facingMode, setPatternCanvas, setAlready }), [scale, facingMode]);
+  const video                             = VIDEO;
+  React.useEffect(startPlayCallback({
+    video,
+    canvasRef,
+    scale,
+    facingMode,
+    setPatternCanvas,
+    setAlready
+  }), [scale, facingMode]);
 
   return (
     <>

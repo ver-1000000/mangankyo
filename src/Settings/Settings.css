@@ -6,12 +6,17 @@
   border: 0.1rem solid var(--color-cloudy);
   box-shadow: 0 0 0.3rem #ffbb26, 0 0 0.2rem #ffbb26 inset;
   color: inherit;
-  max-width: calc(100% - 4rem);
-  min-width: 35rem;
+  max-height: calc(100% - 9rem);
+  margin: 3rem auto;
+  max-width: calc(100% - 6rem);
+  min-width: 30%;
+  overflow: auto;
+  top: 0;
 }
 
 .Settings-shareButton-container {
   display: flex;
+  justify-content: space-around;
 }
 
 .Settings-footer {

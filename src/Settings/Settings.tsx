@@ -77,7 +77,7 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
 
   return (
     <>
-      <dialog className="Settings-dialog" ref={dialogRef} style={{top: '30px', backgroundImage: 'url(./splash-star.svg)'}}>
+      <dialog className="Settings-dialog" ref={dialogRef} style={{ backgroundImage: 'url(./splash-star.svg)' }}>
         <section>
           <h2>設定</h2>
           <dl>
@@ -96,7 +96,10 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
               />
             </dd>
             <dd>
-              <button type="button" onClick={() => setScale(scaleRangeInputRef.current?.valueAsNumber || 0.5)}>
+              <button
+                type="button"
+                className="button"
+                onClick={() => setScale(scaleRangeInputRef.current?.valueAsNumber || 0.5)}>
                 適用する
               </button>
             </dd>
@@ -105,7 +108,7 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
             <dt>フロントカメラ / リアカメラ</dt>
             <dd>
               <small>※ デバイスが認識できない場合は切り替わりません。</small>
-              <button type="button" onClick={toggleFacingModeHandling}>切り替える</button>
+              <button type="button" className="button" onClick={toggleFacingModeHandling}>切り替える</button>
             </dd>
           </dl>
         </section>
@@ -114,10 +117,10 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
           <dl>
             <dt>表示されているキャンバス画像を保存</dt>
             <dd>
-              <button type="button" onClick={() => download({ type: 'display' })}>画面全体</button>
+              <button type="button" className="button" onClick={() => download({ type: 'display' })}>画面全体</button>
             </dd>
             <dd>
-              <button type="button" onClick={() => download({ type: 'pattern' })}>最小パターン</button>
+              <button type="button" className="button" onClick={() => download({ type: 'pattern' })}>最小パターン</button>
             </dd>
           </dl>
         </section>
@@ -151,7 +154,7 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
           </dl>
         </section>
         <footer className="Settings-footer">
-          <button type="button" className="sky" onClick={clickHandling}>close</button>
+          <button type="button" className="button sky" onClick={clickHandling}>close</button>
         </footer>
       </dialog>
     </>

@@ -1,0 +1,37 @@
+.FloatButtons-ul {
+  bottom: 0;
+  display: flex;
+  height: 10vmin;
+  justify-content: space-around;
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+}
+
+.FloatButtons-ul li {
+  margin: 0;
+}
+
+.FloatButtons-button {
+  background: var(--color-cloudy);
+  border: none;
+  border-radius: 100%;
+  height: 10vmin;
+  opacity: .7;
+  outline: none;
+  margin: 0;
+  pointer-events: auto;
+  transition: 300ms ease;
+  transition-property: opacity background;
+  width: 10vmin;
+}
+
+.FloatButtons-button:active,
+.FloatButtons-button:hover,
+.FloatButtons-button:focus {
+  background: var(--color-starlight);
+  opacity: .9;
+}

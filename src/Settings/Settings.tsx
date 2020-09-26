@@ -8,12 +8,16 @@ import './Settings.css';
 interface Props {
   already: boolean;
   scale: number;
-  setScale: React.Dispatch<React.SetStateAction<number>>;
   facingMode: MediaTrackConstraints['facingMode'];
-  setFacingMode: React.Dispatch<React.SetStateAction<this['facingMode']>>;
   settingsVisibled: boolean;
-  setSettingsVisibled: React.Dispatch<React.SetStateAction<boolean>>;
+  floatButtonsVisibled: boolean;
+  floatButtonsDownloadType: DownloadOptions['type'];
   download: (option: DownloadOptions) => void;
+  setScale: React.Dispatch<React.SetStateAction<number>>;
+  setFacingMode: React.Dispatch<React.SetStateAction<this['facingMode']>>;
+  setFloatButtonsVisibled: React.Dispatch<React.SetStateAction<boolean>>;
+  setFloatButtonsDownloadType: React.Dispatch<React.SetStateAction<DownloadOptions['type']>>;
+  setSettingsVisibled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 /**
@@ -62,10 +66,14 @@ const Settings = ({
   scale,
   setScale,
   facingMode,
+  floatButtonsVisibled,
+  floatButtonsDownloadType,
+  download,
   setFacingMode,
+  setFloatButtonsVisibled,
+  setFloatButtonsDownloadType,
   settingsVisibled,
-  setSettingsVisibled,
-  download
+  setSettingsVisibled
 }: Props) => {
   const dialogRef          = React.useRef<HTMLDialogElement>(null);
   const scaleRangeInputRef = React.useRef<HTMLInputElement>(null);
@@ -109,6 +117,26 @@ const Settings = ({
             <dd>
               <small>※ デバイスが認識できない場合は切り替わりません。</small>
               <button type="button" className="button" onClick={toggleFacingMode}>切り替える</button>
+            </dd>
+          </dl>
+          <dl>
+            <dt>ボタンの表示 / 非表示を切り替える</dt>
+            <dd>
+              <small>※ ボタンが非表示の時、キャンバスをクリックすると設定画面が開きます。</small>
+              <button type="button" className="button" onClick={() => setFloatButtonsVisibled(!floatButtonsVisibled)}>
+                ボタンを{floatButtonsVisibled ? '非表示にする' : '表示する'}
+              </button>
+            </dd>
+          </dl>
+          <dl>
+            <dt>ダウンロードボタンのモードを切り替える</dt>
+            <dd>
+              <button
+                type="button"
+                className="button"
+                onClick={() => setFloatButtonsDownloadType(floatButtonsDownloadType === 'display' ? 'pattern' : 'display')}>
+                ダウンロードボタンを[{floatButtonsDownloadType === 'display' ? '画面全体' : '最小パターン'}モード] にする
+              </button>
             </dd>
           </dl>
         </section>

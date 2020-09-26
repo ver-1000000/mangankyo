@@ -1,6 +1,7 @@
 import React from 'react';
 
 import './App.css';
+import FloatButtons from './FloatButtons/FloatButtons';
 import SplashScreen from './SplashScreen/SplashScreen';
 import Settings from './Settings/Settings';
 
@@ -213,6 +214,8 @@ const startPlayEffect = ({
 
 const App = () => {
   const [already, setAlready]                                   = React.useState<boolean>(false);
+  const [floatButtonsVisibled, setFloatButtonsVisibled]         = React.useState<boolean>(true);
+  const [floatButtonsDownloadType, setFloatButtonsDownloadType] = React.useState<DownloadOptions['type']>('display');
   const [settingsVisibled, setSettingsVisibled]                 = React.useState<boolean>(false);
   const [facingMode, setFacingMode]                             = React.useState<PlayOptions['facingMode']>('user');
   const [scale, setScale]                                       = React.useState<number>(0.5);
@@ -231,17 +234,33 @@ const App = () => {
 
   return (
     <>
-      <canvas ref={canvasRef} className="App-canvas" onClick={() => setSettingsVisibled(true)}></canvas>
+      <canvas
+        ref={canvasRef}
+        className="App-canvas"
+        style={{ pointerEvents: floatButtonsVisibled ? 'none' : 'auto' }}
+        onClick={() => setSettingsVisibled(true)}>
+      </canvas>
       <SplashScreen already={already} />
+      <FloatButtons
+        already={already}
+        floatButtonsVisibled={floatButtonsVisibled}
+        floatButtonsDownloadType={floatButtonsDownloadType}
+        download={download}
+        setSettingsVisibled={setSettingsVisibled}
+      />
       <Settings
         already={already}
         scale={scale}
         facingMode={facingMode}
+        floatButtonsVisibled={floatButtonsVisibled}
+        floatButtonsDownloadType={floatButtonsDownloadType}
+        download={download}
         setScale={setScale}
         setFacingMode={setFacingMode}
         settingsVisibled={settingsVisibled}
         setSettingsVisibled={setSettingsVisibled}
-        download={download}
+        setFloatButtonsVisibled={setFloatButtonsVisibled}
+        setFloatButtonsDownloadType={setFloatButtonsDownloadType}
       />
     </>
   );

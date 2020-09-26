@@ -1,5 +1,10 @@
 # Mangankyo | 万顔鏡
-Webカメラの画像をソースにし、万華鏡のようなうつくしい幾何学パターン画像を表示するWebアプリケーションです。
+万顔鏡は、Webカメラの画像をソースにし、
+万華鏡のようなうつくしい幾何学パターン画像を表示するWebアプリケーションです。
+
+<div align="center">
+  <img width="640" height="360" src="https://user-images.githubusercontent.com/6778957/94351690-cb401100-0096-11eb-8fee-a1d912af6a3e.gif" alt="万顔鏡 サンプルアニメーション" title="万顔鏡 サンプルアニメーション">
+</div>
 
 ## 動作環境
 以下の環境での動作を確認しています。

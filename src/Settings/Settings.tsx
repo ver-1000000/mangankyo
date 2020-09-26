@@ -57,7 +57,11 @@ const keydownEffect = (settingsVisibled: boolean, setSettingsVisibled: Props['se
 const settingsVisibledEffect = (settingsVisibled: boolean, dialogRef: React.RefObject<HTMLDialogElement>) => () => {
   if (dialogRef.current == null) { return; }
   dialogPolyfill.registerDialog(dialogRef.current);
-  if (settingsVisibled) { dialogRef.current.showModal(); } else { dialogRef.current.close(); }
+  if (settingsVisibled && !dialogRef.current.open) {
+    dialogRef.current.showModal();
+  } else if (!settingsVisibled && dialogRef.current.open) {
+    dialogRef.current.close();
+  }
   return () => {};
 };
 

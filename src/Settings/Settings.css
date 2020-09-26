@@ -10,6 +10,10 @@
   min-width: 35rem;
 }
 
+.Settings-shareButton-container {
+  display: flex;
+}
+
 .Settings-footer {
   margin: 3rem;
 }

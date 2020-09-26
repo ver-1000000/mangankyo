@@ -1,5 +1,6 @@
 import React from 'react';
 import dialogPolyfill from 'dialog-polyfill';
+import { FacebookShareButton, FacebookIcon, TwitterShareButton, TwitterIcon, LineShareButton, LineIcon } from 'react-share';
 
 import { DownloadOptions } from '../App';
 import './Settings.css';
@@ -13,6 +14,13 @@ interface Props {
   facingMode: MediaTrackConstraints['facingMode'];
   setFacingMode: React.Dispatch<React.SetStateAction<this['facingMode']>>;
   download: (option: DownloadOptions) => void;
+}
+
+const SHARE = {
+  url: 'https://ver-1000000.github.io/mangankyo/',
+  title: 'Mangankyo | 万顔鏡',
+  via: 'Ver1000000000',
+  size: '2rem'
 }
 
 /**
@@ -123,6 +131,22 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
             <dt>WebSite / Author</dt>
             <dd>
               <a href="https://ver1000000.com">Ver.1000000</a> / <a href="https://twitter.com/Ver1000000000">@Ver1000000000</a>
+            </dd>
+          </dl>
+        </section>
+        <section>
+          <h2>SNSで共有</h2>
+          <dl>
+            <dd className="Settings-shareButton-container">
+              <FacebookShareButton url={SHARE.url}>
+                <FacebookIcon size={SHARE.size} />
+              </FacebookShareButton>
+              <TwitterShareButton url={SHARE.url} title={SHARE.title} via={SHARE.via}>
+                <TwitterIcon size={SHARE.size} />
+              </TwitterShareButton>
+              <LineShareButton url={SHARE.url} title={SHARE.title}>
+                <LineIcon size={SHARE.size} />
+              </LineShareButton>
             </dd>
           </dl>
         </section>

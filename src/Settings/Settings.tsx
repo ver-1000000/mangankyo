@@ -1,4 +1,5 @@
 import React from 'react';
+import dialogPolyfill from 'dialog-polyfill';
 
 import { DownloadOptions } from '../App';
 import './Settings.css';
@@ -19,6 +20,7 @@ interface Props {
  */
 const toggleModal = ({ current }: React.RefObject<HTMLDialogElement>) => {
   if (current == null) { return; }
+  dialogPolyfill.registerDialog(current);
   if (current.open) {
     current.close();
   } else {

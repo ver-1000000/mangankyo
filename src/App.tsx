@@ -192,7 +192,7 @@ const VIDEO = (() => {
 /**
  * 値の変更に連動し、videoの再生と停止などを行う。
  */
-const startPlayCallback = ({
+const startPlayEffect = ({
   video,
   canvasRef,
   scale,
@@ -212,35 +212,36 @@ const startPlayCallback = ({
 };
 
 const App = () => {
-  const [already, setAlready]             = React.useState<boolean>(false);
-  const [facingMode, setFacingMode]       = React.useState<PlayOptions['facingMode']>('user');
-  const [scale, setScale]                 = React.useState<number>(0.5);
-  const [patternCanvas, setPatternCanvas] = React.useState<HTMLCanvasElement | null>(null);
-  const canvasRef                         = React.useRef<HTMLCanvasElement>(null);
-  const download                          = React.useCallback(downloadCallback(canvasRef, patternCanvas), [patternCanvas]);
-  const video                             = VIDEO;
-  React.useEffect(startPlayCallback({
+  const [already, setAlready]                                   = React.useState<boolean>(false);
+  const [settingsVisibled, setSettingsVisibled]                 = React.useState<boolean>(false);
+  const [facingMode, setFacingMode]                             = React.useState<PlayOptions['facingMode']>('user');
+  const [scale, setScale]                                       = React.useState<number>(0.5);
+  const [patternCanvas, setPatternCanvas]                       = React.useState<HTMLCanvasElement | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const download  = React.useCallback(downloadCallback(canvasRef, patternCanvas), [patternCanvas]);
+  const video     = VIDEO;
+  React.useEffect(startPlayEffect({
     video,
     canvasRef,
     scale,
     facingMode,
     setPatternCanvas,
     setAlready
-  }), [scale, facingMode]);
+  }), [canvasRef, scale, facingMode]);
 
   return (
     <>
-      <canvas ref={canvasRef} className="App-canvas"></canvas>
+      <canvas ref={canvasRef} className="App-canvas" onClick={() => setSettingsVisibled(true)}></canvas>
       <SplashScreen already={already} />
       <Settings
-        className="App-Settings"
         already={already}
         scale={scale}
-        setScale={setScale}
         facingMode={facingMode}
+        setScale={setScale}
         setFacingMode={setFacingMode}
+        settingsVisibled={settingsVisibled}
+        setSettingsVisibled={setSettingsVisibled}
         download={download}
-        canvasRef={canvasRef}
       />
     </>
   );

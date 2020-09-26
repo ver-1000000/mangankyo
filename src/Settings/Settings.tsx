@@ -7,15 +7,18 @@ import './Settings.css';
 
 interface Props {
   already: boolean;
-  className: string;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
   scale: number;
   setScale: React.Dispatch<React.SetStateAction<number>>;
   facingMode: MediaTrackConstraints['facingMode'];
   setFacingMode: React.Dispatch<React.SetStateAction<this['facingMode']>>;
+  settingsVisibled: boolean;
+  setSettingsVisibled: React.Dispatch<React.SetStateAction<boolean>>;
   download: (option: DownloadOptions) => void;
 }
 
+/**
+ * `react-share`で利用する属性値定数郡。
+ */
 const SHARE = {
   url: 'https://ver-1000000.github.io/mangankyo/',
   title: 'Mangankyo | 万顔鏡',
@@ -24,54 +27,51 @@ const SHARE = {
 }
 
 /**
- * モーダルの表示状態を切り替える。
+ * フロントカメラ / リアカメラを切り替える。
  */
-const toggleModal = ({ current }: React.RefObject<HTMLDialogElement>) => {
-  if (current == null) { return; }
-  dialogPolyfill.registerDialog(current);
-  if (current.open) {
-    current.close();
-  } else {
-    current.showModal();
-  }
-};
+const toggleFacingModeCallback = (facingMode: Props['facingMode'], setFacingMode: Props['setFacingMode']) => () => {
+  setFacingMode(facingMode === 'user' ? 'environment' : 'user');
+}
 
 /**
  * キーダウンイベントの取り回し。 ESC押下時にモーダルの表示状態を切り替える。
  */
-const keydownHandlingCallback = (dialogRef: React.RefObject<HTMLDialogElement>) => (e: KeyboardEvent) => {
-  if (e.keyCode === 27) { // Escape
-    e.preventDefault();
-    toggleModal(dialogRef);
-  }
+const keydownEffect = (settingsVisibled: boolean, setSettingsVisibled: Props['setSettingsVisibled']) => () => {
+  const keydownHandling = (e: KeyboardEvent) => {
+    if (e.keyCode === 27) { // Escape
+      e.preventDefault();
+      setSettingsVisibled(!settingsVisibled);
+    }
+  };
+  document.addEventListener('keydown', keydownHandling);
+  return () => document.removeEventListener('keydown', keydownHandling);
 };
 
 /**
- * クリックイベントの取り回し。 モーダルの表示状態を切り替える。
+ * `settingsVisibled`が変更されるのに合わせてdialogの表示を切り替える。
  */
-const clickHandlingCallback = (dialogRef: React.RefObject<HTMLDialogElement>) => () => {
-  toggleModal(dialogRef);
+const settingsVisibledEffect = (settingsVisibled: boolean, dialogRef: React.RefObject<HTMLDialogElement>) => () => {
+  if (dialogRef.current == null) { return; }
+  dialogPolyfill.registerDialog(dialogRef.current);
+  if (settingsVisibled) { dialogRef.current.showModal(); } else { dialogRef.current.close(); }
+  return () => {};
 };
 
-/**
- * フロントカメラ / リアカメラを切り替える。
- */
-const toggleFacingModeHandlingCallback = (
-  setFacingMode: React.Dispatch<React.SetStateAction<MediaTrackConstraints['facingMode']>>,
-  facingMode:  MediaTrackConstraints['facingMode']
-) => () => {
-  setFacingMode(facingMode === 'user' ? 'environment' : 'user');
-}
-
-const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasRef, download }: Props) => {
-  const dialogRef                = React.useRef<HTMLDialogElement>(null);
-  const scaleRangeInputRef       = React.useRef<HTMLInputElement>(null);
-  const keydownHandling          = React.useCallback(keydownHandlingCallback(dialogRef), []);
-  const clickHandling            = React.useCallback(clickHandlingCallback(dialogRef), []);
-  const toggleFacingModeHandling = React.useCallback(toggleFacingModeHandlingCallback(setFacingMode, facingMode), []);
-
-  React.useEffect(() => document.addEventListener('keydown', keydownHandling, false), [keydownHandling]);
-  React.useEffect(() => canvasRef.current?.addEventListener('click', clickHandling, false), [clickHandling, canvasRef]);
+const Settings = ({
+  already,
+  scale,
+  setScale,
+  facingMode,
+  setFacingMode,
+  settingsVisibled,
+  setSettingsVisibled,
+  download
+}: Props) => {
+  const dialogRef          = React.useRef<HTMLDialogElement>(null);
+  const scaleRangeInputRef = React.useRef<HTMLInputElement>(null);
+  const toggleFacingMode   = React.useCallback(toggleFacingModeCallback(facingMode, setFacingMode), [facingMode]);
+  React.useEffect(keydownEffect(settingsVisibled, setSettingsVisibled), [settingsVisibled, setSettingsVisibled]);
+  React.useEffect(settingsVisibledEffect(settingsVisibled, dialogRef), [settingsVisibled, dialogRef, already]);
 
   if (!already) { return null; }
 
@@ -108,7 +108,7 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
             <dt>フロントカメラ / リアカメラ</dt>
             <dd>
               <small>※ デバイスが認識できない場合は切り替わりません。</small>
-              <button type="button" className="button" onClick={toggleFacingModeHandling}>切り替える</button>
+              <button type="button" className="button" onClick={toggleFacingMode}>切り替える</button>
             </dd>
           </dl>
         </section>
@@ -154,7 +154,7 @@ const Settings = ({ already, scale, setScale, facingMode, setFacingMode, canvasR
           </dl>
         </section>
         <footer className="Settings-footer">
-          <button type="button" className="button sky" onClick={clickHandling}>close</button>
+          <button type="button" className="button sky" onClick={() => setSettingsVisibled(false)}>close</button>
         </footer>
       </dialog>
     </>

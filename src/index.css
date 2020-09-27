@@ -48,18 +48,22 @@ input {
   background: var(--color-midnight);
   color: inherit;
   cursor: pointer;
-  border-radius: 1rem;
-  border: 0.1rem solid var(--color-cloudy);
+  border-radius: 2rem;
+  border: .1rem solid var(--color-cloudy);
   display: block;
   line-height: 1.5;
+  outline: none;
   margin: auto;
-  padding: 0 1rem;
+  padding: .5rem 1rem;
 }
 
-.button:active,
-.button:hover,
 .button:focus {
-  background: var(--color-starlight);
+  border-width: .2rem;
+  padding: .4rem 1rem;
+}
+
+.button:active {
+  border-color: var(--color-sunset);
 }
 
 .button.sky {

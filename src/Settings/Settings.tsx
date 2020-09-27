@@ -89,13 +89,17 @@ const Settings = ({
 
   return (
     <>
-      <dialog className="Settings-dialog" ref={dialogRef} style={{ backgroundImage: 'url(./splash-star.svg)' }}>
-        <section>
+      <dialog
+        className="Settings-dialog"
+        ref={dialogRef}
+        onClick={() => setSettingsVisibled(false)}
+        style={{ backgroundImage: 'url(./splash-star.svg)' }}>
+        <section onClick={e => e.stopPropagation()}>
           <h2>設定</h2>
           <dl>
             <dt>パターンの大きさ</dt>
             <dd>
-              <output>{scaleRangeInputRef.current?.value}</output>
+              <output>{scaleRangeInputRef.current?.value ?? 0}</output>
             </dd>
             <dd>
               <input
@@ -124,7 +128,7 @@ const Settings = ({
             </dd>
           </dl>
           <dl>
-            <dt>ボタンの表示 / 非表示を切り替える</dt>
+            <dt>ボタンの表示 / 非表示</dt>
             <dd>
               <small>※ ボタンが非表示の時、キャンバスをクリックすると設定画面が開きます。</small>
               <button type="button" className="button" onClick={() => setFloatButtonsVisibled(!floatButtonsVisibled)}>
@@ -132,19 +136,31 @@ const Settings = ({
               </button>
             </dd>
           </dl>
-          <dl>
-            <dt>ダウンロードボタンのモードを切り替える</dt>
-            <dd>
-              <button
-                type="button"
-                className="button"
-                onClick={() => setFloatButtonsDownloadMode(floatButtonsDownloadMode === 'display' ? 'pattern' : 'display')}>
-                [{floatButtonsDownloadMode === 'display' ? '画面全体' : '最小パターン'}モード] にする
-              </button>
-            </dd>
-          </dl>
+          {(() => {
+            if (!floatButtonsVisibled) { return; }
+            return (
+              <dl>
+                <dt>
+                  ダウンロードボタン
+                  <img src="./button-download.svg" className="Settings-download-img" alt="" />
+                  のモード
+                </dt>
+                <dd>
+                  <small>
+                    ※ 現在は [{floatButtonsDownloadMode === 'display' ? '画面全体' : '最小パターン'}モード] です。
+                  </small>
+                  <button
+                    type="button"
+                    className="button"
+                    onClick={() => setFloatButtonsDownloadMode(floatButtonsDownloadMode === 'display' ? 'pattern' : 'display')}>
+                    [{floatButtonsDownloadMode === 'display' ? '最小パターン' : '画面全体'}モード] にする
+                  </button>
+                </dd>
+              </dl>
+            )
+          })()}
         </section>
-        <section>
+        <section onClick={e => e.stopPropagation()}>
           <h2>ダウンロード</h2>
           <dl>
             <dt>表示されているキャンバス画像を保存</dt>
@@ -156,7 +172,7 @@ const Settings = ({
             </dd>
           </dl>
         </section>
-        <section>
+        <section onClick={e => e.stopPropagation()}>
           <h2>万顔鏡について</h2>
           <dl>
             <dt>Source on GitHub</dt>
@@ -169,7 +185,7 @@ const Settings = ({
             </dd>
           </dl>
         </section>
-        <section>
+        <section onClick={e => e.stopPropagation()}>
           <h2>SNSで共有</h2>
           <dl>
             <dd className="Settings-shareButton-container">
@@ -185,7 +201,7 @@ const Settings = ({
             </dd>
           </dl>
         </section>
-        <footer className="Settings-footer">
+        <footer className="Settings-footer" onClick={e => e.stopPropagation()}>
           <button type="button" className="button sky" onClick={() => setSettingsVisibled(false)}>close</button>
         </footer>
       </dialog>

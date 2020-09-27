@@ -6,12 +6,12 @@ import { DownloadOptions } from '../App';
 interface Props {
   already: boolean;
   floatButtonsVisibled: boolean;
-  floatButtonsDownloadType: DownloadOptions['type'];
+  floatButtonsDownloadMode: DownloadOptions['mode'];
   setSettingsVisibled: React.Dispatch<boolean>;
   download: (options: DownloadOptions) => void;
 }
 
-const FloatButtons = ({ already, floatButtonsVisibled, floatButtonsDownloadType, setSettingsVisibled, download }: Props) => {
+const FloatButtons = ({ already, floatButtonsVisibled, floatButtonsDownloadMode, setSettingsVisibled, download }: Props) => {
   if (!already || !floatButtonsVisibled) { return null; }
 
   return (
@@ -24,7 +24,7 @@ const FloatButtons = ({ already, floatButtonsVisibled, floatButtonsDownloadType,
             src="./button-download.svg"
             alt="ダウンロードボタン"
             title="キャンバス画像をダウンロード"
-            onClick={() => download({ type: floatButtonsDownloadType })}
+            onClick={() => download({ mode: floatButtonsDownloadMode })}
           />
         </li>
         <li>

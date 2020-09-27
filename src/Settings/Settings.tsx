@@ -11,12 +11,12 @@ interface Props {
   facingMode: MediaTrackConstraints['facingMode'];
   settingsVisibled: boolean;
   floatButtonsVisibled: boolean;
-  floatButtonsDownloadType: DownloadOptions['type'];
+  floatButtonsDownloadMode: DownloadOptions['mode'];
   download: (option: DownloadOptions) => void;
   setScale: React.Dispatch<React.SetStateAction<number>>;
   setFacingMode: React.Dispatch<React.SetStateAction<this['facingMode']>>;
   setFloatButtonsVisibled: React.Dispatch<React.SetStateAction<boolean>>;
-  setFloatButtonsDownloadType: React.Dispatch<React.SetStateAction<DownloadOptions['type']>>;
+  setFloatButtonsDownloadMode: React.Dispatch<React.SetStateAction<DownloadOptions['mode']>>;
   setSettingsVisibled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -71,11 +71,11 @@ const Settings = ({
   setScale,
   facingMode,
   floatButtonsVisibled,
-  floatButtonsDownloadType,
+  floatButtonsDownloadMode,
   download,
   setFacingMode,
   setFloatButtonsVisibled,
-  setFloatButtonsDownloadType,
+  setFloatButtonsDownloadMode,
   settingsVisibled,
   setSettingsVisibled
 }: Props) => {
@@ -138,8 +138,8 @@ const Settings = ({
               <button
                 type="button"
                 className="button"
-                onClick={() => setFloatButtonsDownloadType(floatButtonsDownloadType === 'display' ? 'pattern' : 'display')}>
-                ダウンロードボタンを[{floatButtonsDownloadType === 'display' ? '画面全体' : '最小パターン'}モード] にする
+                onClick={() => setFloatButtonsDownloadMode(floatButtonsDownloadMode === 'display' ? 'pattern' : 'display')}>
+                [{floatButtonsDownloadMode === 'display' ? '画面全体' : '最小パターン'}モード] にする
               </button>
             </dd>
           </dl>
@@ -149,10 +149,10 @@ const Settings = ({
           <dl>
             <dt>表示されているキャンバス画像を保存</dt>
             <dd>
-              <button type="button" className="button" onClick={() => download({ type: 'display' })}>画面全体</button>
+              <button type="button" className="button" onClick={() => download({ mode: 'display' })}>画面全体</button>
             </dd>
             <dd>
-              <button type="button" className="button" onClick={() => download({ type: 'pattern' })}>最小パターン</button>
+              <button type="button" className="button" onClick={() => download({ mode: 'pattern' })}>最小パターン</button>
             </dd>
           </dl>
         </section>

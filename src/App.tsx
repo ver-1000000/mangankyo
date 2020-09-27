@@ -10,7 +10,7 @@ import Settings from './Settings/Settings';
  */
 export interface DownloadOptions {
   /** *"display"時は画面全体を、"pattern"時は最小パターンをダウンロードする。 */
-  type: 'display' | 'pattern';
+  mode: 'display' | 'pattern';
 }
 
 /**
@@ -159,7 +159,7 @@ const play = async (video: HTMLVideoElement, { canvas, scale, facingMode, setPat
 
 /**
  * 渡されたcanvasからpngを生成し、ダウンロードさせる。
- * {@param pattern} options.typeが"pattern"のとき、`pattern`のwidth/heightを利用して`main`を切り抜く
+ * {@param pattern} options.modeが"pattern"のとき、`pattern`のwidth/heightを利用して`main`を切り抜く
  */
 const downloadCallback = (
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -167,7 +167,7 @@ const downloadCallback = (
 ) => (options: DownloadOptions) => {
   assertIsDefined(canvasRef.current);
   assertIsDefined(pattern);
-  const { width, height } = options.type === 'display' ? canvasRef.current : pattern;
+  const { width, height } = options.mode === 'display' ? canvasRef.current : pattern;
   const [canvas, ctx] = createCanvas({ width, height });
   ctx.drawImage(canvasRef.current, 0, 0);
   const anchor = document.createElement('a');
@@ -215,7 +215,7 @@ const startPlayEffect = ({
 const App = () => {
   const [already, setAlready]                                   = React.useState<boolean>(false);
   const [floatButtonsVisibled, setFloatButtonsVisibled]         = React.useState<boolean>(true);
-  const [floatButtonsDownloadType, setFloatButtonsDownloadType] = React.useState<DownloadOptions['type']>('display');
+  const [floatButtonsDownloadMode, setFloatButtonsDownloadMode] = React.useState<DownloadOptions['mode']>('display');
   const [settingsVisibled, setSettingsVisibled]                 = React.useState<boolean>(false);
   const [facingMode, setFacingMode]                             = React.useState<PlayOptions['facingMode']>('user');
   const [scale, setScale]                                       = React.useState<number>(0.5);
@@ -244,7 +244,7 @@ const App = () => {
       <FloatButtons
         already={already}
         floatButtonsVisibled={floatButtonsVisibled}
-        floatButtonsDownloadType={floatButtonsDownloadType}
+        floatButtonsDownloadMode={floatButtonsDownloadMode}
         download={download}
         setSettingsVisibled={setSettingsVisibled}
       />
@@ -253,14 +253,14 @@ const App = () => {
         scale={scale}
         facingMode={facingMode}
         floatButtonsVisibled={floatButtonsVisibled}
-        floatButtonsDownloadType={floatButtonsDownloadType}
+        floatButtonsDownloadMode={floatButtonsDownloadMode}
         download={download}
         setScale={setScale}
         setFacingMode={setFacingMode}
         settingsVisibled={settingsVisibled}
         setSettingsVisibled={setSettingsVisibled}
         setFloatButtonsVisibled={setFloatButtonsVisibled}
-        setFloatButtonsDownloadType={setFloatButtonsDownloadType}
+        setFloatButtonsDownloadMode={setFloatButtonsDownloadMode}
       />
     </>
   );
